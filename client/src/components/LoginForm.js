@@ -1,5 +1,5 @@
 // see SignupForm.js for comments
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 
 import { useMutation } from '@apollo/react-hooks';
@@ -12,19 +12,11 @@ const LoginForm = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [login, { error }] = useMutation(LOGIN_USER);
 
-  useEffect(() => {
-    if (error) {
-      setShowAlert(true);
-    } else {
-      setShowAlert(false);
-    }
-  }, [error]);
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setUserFormData({ ...userFormData, [name]: value });
   };
-
+ // submit form
   const handleFormSubmit = async (event) => {
     event.preventDefault();
 
@@ -40,11 +32,9 @@ const LoginForm = () => {
         variables: { ...userFormData },
       });
 
-      console.log(data);
       Auth.login(data.login.token);
     } catch (err) {
       console.error(err);
-      setShowAlert(true);
     }
 
     setUserFormData({
@@ -92,6 +82,7 @@ const LoginForm = () => {
           Submit
         </Button>
       </Form>
+      {error && <div>Sign up failed</div>}
     </>
   );
 };
