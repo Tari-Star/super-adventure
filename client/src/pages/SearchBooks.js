@@ -25,16 +25,19 @@ const SearchBooks = () => {
 
   const [saveBook] = useMutation(SAVE_BOOK);
 
-  // make a search to google books api
-  // https://www.googleapis.com/books/v1/volumes?q=harry+potter
-  const searchGoogleBooks = (searchInput) => {
-    return fetch(`https://www.googleapis.com/books/v1/volumes?q=${searchInput}`);
-  };
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
   useEffect(() => {
     return () => saveBookIds(savedBookIds);
   });
+
+  // make a search to google books api
+  // https://www.googleapis.com/books/v1/volumes?q=harry+potter
+  const searchGoogleBooks = (searchInput) => {
+    return fetch(
+      `https://www.googleapis.com/books/v1/volumes?q=${searchInput}`
+    );
+  };
 
   // create method to search for books and set state on form submit
   const handleFormSubmit = async (event) => {
@@ -81,11 +84,12 @@ const SearchBooks = () => {
     }
 
     try {
-      // eslint-disable-next-line
-      const { data } = await saveBook({
-        variables: { bookData: { ...bookToSave } },
+      const response = await saveBook({
+        variables: { input: { ...bookToSave } },
       });
-      console.log(savedBookIds);
+      if (!response) {
+        throw new Error("something went wrong!");
+      }
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (err) {
