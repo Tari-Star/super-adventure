@@ -8,17 +8,21 @@ import {
 } from "react-bootstrap";
 
 import { useQuery, useMutation } from "@apollo/react-hooks";
+
+import Auth from "../utils/auth";
+import { removeBookId } from "../utils/localStorage";
 import { QUERY_ME } from "../utils/queries";
 import { REMOVE_BOOK } from "../utils/mutations";
-import Auth from "../utils/auth";
-import { removeBookId, saveBookIds } from "../utils/localStorage";
+
+
 
 const SavedBooks = () => {
   const { loading, data } = useQuery(QUERY_ME);
+  // eslint-disable-next-line
+  const [removeBook, {error}] = useMutation(REMOVE_BOOK);
+
   const userData = data?.me || {};
-
-  const [removeBook] = useMutation(REMOVE_BOOK);
-
+  
   // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
@@ -26,12 +30,11 @@ const SavedBooks = () => {
       return false;
     }
     try {
-      const response = await removeBook({
-        variables: { bookId: bookId },
+      // eslint-disable-next-line
+      const {data} = await removeBook({
+        variables: {bookId},
       });
-      if (!response) {
-        throw new Error("something went wrong!");
-      }
+  
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
@@ -43,10 +46,6 @@ const SavedBooks = () => {
   if (loading) {
     return <h2>LOADING...</h2>;
   }
-
-  // sync localStorage with what was returned from the userData query
-  const savedBookIds = userData.savedBooks.map((book) => book.bookId);
-  saveBookIds(savedBookIds);
 
   return (
     <>
@@ -64,7 +63,7 @@ const SavedBooks = () => {
             : "You have no saved books!"}
         </h2>
         <CardColumns>
-          {userData.savedBooks.map((book) => {
+          {userData.savedBooks?.map((book) => {
             return (
               <Card key={book.bookId} border="dark">
                 {book.image ? (
